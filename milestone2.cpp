@@ -82,6 +82,44 @@ void rotFile(const std::string& inputFile, const std::string& outputFile, int ro
 }
 
 
+std::string vigenereCipher(const std::string& input, const std::string& keyword, bool encode) {
+    std::string result;
+    int keyIndex = 0;
+    for (int i = 0; i < input.length(); i++) {
+        char c = input[i];
+
+        if (std::isalpha(c)) {
+            // get shift amount from current keyword letter
+            // keyword is lowercase so we subtract 'a' to get 0-25
+            int keyShift = std::tolower(keyword[keyIndex % keyword.length()]) - 'a';
+
+            if (encode) {
+                result += shift(c, keyShift);
+            } else {
+                result += shift(c, -keyShift);
+            }
+
+            keyIndex++; 
+        } else {
+            result += c; // leave non letters alone
+        }
+    }
+
+    return result;
+}
+
+void fileVigenereCipher(const std::string& inputFile, const std::string& outputFile, const std::string& keyword, bool encode) {
+    std::string content = readFile(inputFile);
+    std::string result = vigenereCipher(content, keyword, encode);
+    writeFile(outputFile, result);
+
+    if (encode) {
+        std::cout << "Vigenere encoded successfully -> " << outputFile << std::endl;
+    } else {
+        std::cout << "Vigenere decoded successfully -> " << outputFile << std::endl;
+    }
+}
+
 int main(){
     writeFile("input.txt", "Hello world! Dont share this super secret message with anyone");
     
@@ -106,5 +144,17 @@ int main(){
     rotFile("rot13_encoded.txt", "rot13_decoded.txt", 13, false);
     std::cout << "ROT13 Decoded:" << std::endl;
     std::cout << readFile("rot13_decoded.txt") << std::endl;
+
+    // encode with keyword "cat" w/ vignere
+    fileVigenereCipher("input.txt", "vigenere_encoded.txt", "cat", true);
+    std::cout << "Vigenere Encoded:" << std::endl;
+    std::cout << readFile("vigenere_encoded.txt") << std::endl;
+
+    // decode with same keyword "cat" w/ vignere
+    fileVigenereCipher("vigenere_encoded.txt", "vigenere_decoded.txt", "cat", false);
+    std::cout << "Vigenere Decoded:" << std::endl;
+    std::cout << readFile("vigenere_decoded.txt") << std::endl;
+
     return 0;
+
 }
